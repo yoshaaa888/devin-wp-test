@@ -1,9 +1,33 @@
 tasks:
-  - init: |
-      docker-compose pull
-  - command: |
-      docker-compose up
-
+  - name: Setup
+    init: |
+      # Lock down the version of wordpress we are using.
+      export WP_VERSION=6.2.2
+      # Let's get our database setup
+      mysql -e "CREATE DATABASE IF NOT EXISTS wordpress;"
+      # And now, let's setup WordPress
+      docker-run-wordpress
+      # Now, what's your pleasure
+      echo "What's your pleasure"
+      # --- ↓↓プラグインをコピーする指示↓↓ ---
+      cp -r monthly-booking wp-content/plugins/
+      # See if we have an init script
+      if [ -f ".gitpod-init.sh" ]; then
+        bash .gitpod-init.sh
+      fi
+    command: |
+      # Let's start supervisord
+      echo "Starting supervisord"
+      supervisord -c .gitpod.supervisord.conf
+ports:
+  - port: 80
+    onOpen: open-preview
+  - port: 3306
+    onOpen: ignore
 vscode:
   extensions:
+    - esbenp.prettier-vscode
+    - hookyqr.beautify
     - ms-azuretools.vscode-docker
+    - neilbrayfield.php-docblocker
+    - xdebug.php-debug
