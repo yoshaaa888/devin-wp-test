@@ -1,33 +1,21 @@
+# Gitpod用 WordPress設定ファイル
 tasks:
-  - name: Setup
+  - name: Setup WordPress
     init: |
-      # Lock down the version of wordpress we are using.
-      export WP_VERSION=6.2.2
-      # Let's get our database setup
-      mysql -e "CREATE DATABASE IF NOT EXISTS wordpress;"
-      # And now, let's setup WordPress
-      docker-run-wordpress
-      # Now, what's your pleasure
-      echo "What's your pleasure"
-      # --- ↓↓プラグインをコピーする指示↓↓ ---
-      cp -r monthly-booking wp-content/plugins/
-      # See if we have an init script
-      if [ -f ".gitpod-init.sh" ]; then
-        bash .gitpod-init.sh
-      fi
-    command: |
-      # Let's start supervisord
-      echo "Starting supervisord"
-      supervisord -c .gitpod.supervisord.conf
+      # 1. WordPress本体をダウンロードして解凍します
+      wget https://ja.wordpress.org/latest-ja.tar.gz
+      tar -xzf latest-ja.tar.gz
+      
+      # 2. 私たちのプラグインを正しい場所にコピーします
+      cp -r monthly-booking wordpress/wp-content/plugins/
+      
+      # 3. 設定ファイルのひな形をコピーします
+      cd wordpress
+      cp wp-config-sample.php wp-config.php
+      
+      echo "セットアップ準備が完了しました。下のターミナルでサーバーが起動します。"
+    command: php -S 0.0.0.0:8000 -t .
+
 ports:
-  - port: 80
+  - port: 8000
     onOpen: open-preview
-  - port: 3306
-    onOpen: ignore
-vscode:
-  extensions:
-    - esbenp.prettier-vscode
-    - hookyqr.beautify
-    - ms-azuretools.vscode-docker
-    - neilbrayfield.php-docblocker
-    - xdebug.php-debug
